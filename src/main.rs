@@ -43,8 +43,10 @@ fn main() {
 // Note that the parameter v *has* to be mutable because we're 
 // modifying it in place.
 fn insertion_sort<T: PartialOrd + std::fmt::Debug>(v: &mut [T]) {
+    
     // Goal: (All x, y | 0 ≤ x < y < length : v[x] ≤ v[y])
     for i in 0..v.len() {
+        
         // Invariant: (All x, y | 0 ≤ x < y < i : v[x] ≤ v[y])
         // I.e., we assume everything < i is already sorted
         // by previous passes. Now we want to get everything
@@ -55,11 +57,14 @@ fn insertion_sort<T: PartialOrd + std::fmt::Debug>(v: &mut [T]) {
         //
         // j is where we are in the bubbling process, so we
         // start with j=i.
+        
         let mut j = i;
+        
         // If j > 0 we might still need to move left, so continue. 
         // But _only_ continue if v[j] _should_ move left, i.e.,
         // if it's less than the value to its left (so those two
         // are out of order.)
+        
         while j > 0 && v[j-1] > v[j] {
             // Since j-1 and j are out of order swap them, and move
             // j one to the left to continue the bubbling if necessary.
@@ -67,9 +72,11 @@ fn insertion_sort<T: PartialOrd + std::fmt::Debug>(v: &mut [T]) {
             j -= 1;
         }
     }
+    
     // And we're done! The outer for loop is done O(N) times, and
     // the inner while loop is (on average) O(N), so insertion sort
     // is O(N^2).
+
 }
 
 // Quicksort sort is also "in place", so we modify the input array v
@@ -82,7 +89,9 @@ fn insertion_sort<T: PartialOrd + std::fmt::Debug>(v: &mut [T]) {
 //
 // Note that the parameter v *has* to be mutable because we're 
 // modifying it in place.
+
 fn quicksort<T: PartialOrd + std::fmt::Debug>(v: &mut [T]) {
+    
     // Quicksort is a recursive solution where we select a pivot
     // value (usually just the first element) and split (in place)
     // the array into two sections: The "front" is all < the pivot,
@@ -98,6 +107,7 @@ fn quicksort<T: PartialOrd + std::fmt::Debug>(v: &mut [T]) {
     // end up with infinite recursion.)
 
     let length = v.len();
+
     // If the array has 0 or 1 elements it's already sorted
     // and we'll just stop.
     if length < 2 {
@@ -105,17 +115,23 @@ fn quicksort<T: PartialOrd + std::fmt::Debug>(v: &mut [T]) {
     }
 
     // Now choose a pivot and do the organizing.
-    
-    // ...
-
-    let smaller = 0; // Totally wrong – you should fix this.
+    let mut smaller = 0;
+    for i in 1..length {
+        if v[i] < v[0] {
+            smaller += 1;
+            v.swap(smaller, i);
+        }
+    }
 
     // Sort all the items < pivot
-    quicksort(&mut v[0..smaller]);
+    v.swap(0, smaller);
+
     // Sort all the items ≥ pivot, *not* including the
     // pivot value itself. If we don't include the +1
     // here you can end up in infinite recursions.
+    quicksort(&mut v[0..smaller]);
     quicksort(&mut v[smaller+1..length]);
+
 }
 
 // Merge sort can't be done "in place", so it needs to return a _new_
@@ -137,7 +153,9 @@ fn quicksort<T: PartialOrd + std::fmt::Debug>(v: &mut [T]) {
 // but I (Nic) couldn't figure out an easy way to sort out the types on the
 // `merge()` function keeping everything as arrays. It was a lot easier to 
 // just have the return type be Vec, so that's what I did. 
+
 fn merge_sort<T: PartialOrd + std::marker::Copy + std::fmt::Debug>(v: &[T]) -> Vec<T> {
+    
     // Merge sort is a recursive solution where we split the
     // array in half (slices make this easy), sort each half,
     // and then merge the results together. All the "interesting"
@@ -162,12 +180,14 @@ fn merge_sort<T: PartialOrd + std::marker::Copy + std::fmt::Debug>(v: &[T]) -> V
     // returns the result as the result of this call to
     // `merge_sort()`.
     merge(left, right)
+
 }
 
 // "Out of the box" there's a warning here about `ys` being
 // unused. Presumably you'll actually use `ys` in your solution,
 // so that warning should go away. You can remove this comment
 // if you wish since it won't be relevant any longer.
+
 fn merge<T: PartialOrd + std::marker::Copy + std::fmt::Debug>(xs: Vec<T>, ys: Vec<T>) -> Vec<T> {
     // This takes two sorted vectors, like:
     //    <5, 8, 9> and
@@ -182,9 +202,38 @@ fn merge<T: PartialOrd + std::marker::Copy + std::fmt::Debug>(xs: Vec<T>, ys: Ve
     // vector, and then push all the remaining elements from the
     // other vector onto the result.
 
-    // This is totally wrong and will not sort. You should replace it
-    // with something useful. :)
-    xs
+    let mut result = Vec::<T>::new();
+    let mut i = 0;
+    let mut j = 0;
+
+    // Keep going until we've hit the end of both vectors.
+    while i < xs.len() && j < ys.len() {
+        if xs[i] < ys[j] {
+            result.push(xs[i]);
+            i += 1;
+        } else {
+            result.push(ys[j]);
+            j += 1;
+        }
+    }
+    
+    // As we hit the end of one of the vectors, If we hit
+    // the end of xs, then we need to push all the remaining
+    // elements of ys onto the result. If we hit the end of ys,
+    // then we need to push all the remaining elements of xs
+    // onto the result.
+
+    while i < xs.len() {
+        result.push(xs[i]);
+        i += 1;
+    }
+    while j < ys.len() {
+        result.push(ys[j]);
+        j += 1;
+    }
+
+    result
+
 }
 
 fn is_sorted<T: PartialOrd>(slice: &[T]) -> bool {
